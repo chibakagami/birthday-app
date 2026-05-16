@@ -158,14 +158,15 @@ function startCelebration(birthday) {
   document.getElementById('cel-title').innerHTML = '🎉 生日快樂！';
   document.getElementById('cel-name').innerHTML = `<span>${escapeHTML(b.name)}</span>`;
 
-  /* 壽星模式：返回鍵改為 🔒 解鎖，避免返回後循環 */
+  /* 壽星模式：隱藏返回鍵，改用右下角觸發器解鎖 */
   const backBtn = document.getElementById('cel-back');
+  const celTrigger = document.getElementById('cel-unlock-trigger');
   if (getAppMode() === 'guest') {
-    backBtn.textContent = '🔒';
-    backBtn.title = '管理者解鎖';
+    backBtn.style.display = 'none';
+    if (celTrigger) celTrigger.style.display = '';
   } else {
-    backBtn.textContent = '←';
-    backBtn.title = '';
+    backBtn.style.display = '';
+    if (celTrigger) celTrigger.style.display = 'none';
   }
 
   const msg = b.message || '願你的每一天都充滿喜悅和幸福！';
@@ -602,31 +603,19 @@ function init() {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
 
-  /* Celebrate back:
-     - 管理者模式 → 直接返回首頁
-     - 壽星模式   → 顯示 PIN 輸入；答對才切回管理者，取消則留在慶祝頁 */
+  /* Celebrate back: admin mode only, guest uses bottom-right trigger */
   document.getElementById('cel-back').addEventListener('click', () => {
-    if (getAppMode() === 'guest') {
-      openPinOverlay('unlock').then(pin => {
-        if (pin !== null) {
-          deactivateGuestMode();
-          clearInterval(guestDaysTimer);
-          showPage('home');
-          showToast('已切換回管理者模式 ✓');
-        }
-        /* pin === null 表示取消，留在慶祝頁，什麼都不做 */
-      });
-    } else {
-      showPage('home');
-    }
+    showPage('home');
   });
 
   /* Gift boxes */
   setupGiftBoxes();
 
-  /* Guest mode icon tap to unlock */
-  const guestIcon = document.getElementById('guest-icon');
-  if (guestIcon) guestIcon.addEventListener('click', handleGuestTap);
+  /* Bottom-right trigger: 5 taps to unlock (guest mode and celebrate page) */
+  const guestTrigger = document.getElementById('guest-unlock-trigger');
+  if (guestTrigger) guestTrigger.addEventListener('click', handleGuestTap);
+  const celUnlockTrigger = document.getElementById('cel-unlock-trigger');
+  if (celUnlockTrigger) celUnlockTrigger.addEventListener('click', handleGuestTap);
 
   /* PIN keypad */
   document.querySelectorAll('.pin-key').forEach(key => {

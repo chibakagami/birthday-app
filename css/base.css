@@ -401,18 +401,28 @@ ul { list-style: none; }
 .guest-mystery-icon {
   font-size: 5rem;
   animation: floatEmoji 3s infinite ease-in-out;
-  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  position: relative;
 }
-.guest-mystery-icon::after {
-  content: '';
-  position: absolute;
-  inset: -12px;
+
+/* 壽星模式右下角隱藏解鎖觸發器（5連點才出現 PIN） */
+.guest-unlock-trigger {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: rgba(255,215,0,0.1);
-  animation: btnPulse 2s infinite alternate;
+  z-index: 50;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.1);
+  font-size: 0.65rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .guest-hint {
   font-size: 1.1rem;
