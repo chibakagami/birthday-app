@@ -233,6 +233,46 @@
 .fab:hover { transform: scale(1.1) rotate(45deg); box-shadow: 0 10px 32px var(--primary-glow); }
 .fab:active { transform: scale(0.95); }
 
+/* ===== Card Progress Bar ===== */
+.card-progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  margin-top: 14px;
+  overflow: hidden;
+}
+.card-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 1s ease;
+  min-width: 4px;
+}
+
+/* ===== Settings Button ===== */
+.home-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.home-header-left { flex: 1; }
+.settings-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.settings-btn:hover { background: rgba(255,255,255,0.15); color: var(--text); }
+
 /* ===== Section Header ===== */
 .section-header {
   display: flex;

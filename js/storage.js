@@ -104,3 +104,59 @@ function yearProgress(month, day) {
   const elapsed = now - last.getTime();
   return Math.min(1, Math.max(0, elapsed / total));
 }
+
+/* ===== Backup / Restore ===== */
+function exportData() {
+  const payload = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    birthdays: loadBirthdays(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toLocaleDateString('zh-TW').replace(/\//g, '-');
+  a.download = `birthday-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData(jsonText) {
+  const data = JSON.parse(jsonText);
+  const list = data.birthdays;
+  if (!Array.isArray(list)) throw new Error('格式不正確');
+  saveBirthdays(list);
+  return list.length;
+}
+
+/* ===== App Mode (admin / guest) ===== */
+const MODE_KEY = 'app_mode';
+const GUEST_ID_KEY = 'guest_birthday_id';
+const PIN_KEY = 'admin_pin';
+
+function getAppMode() {
+  return localStorage.getItem(MODE_KEY) || 'admin';
+}
+
+function getGuestBirthdayId() {
+  return localStorage.getItem(GUEST_ID_KEY);
+}
+
+function getAdminPin() {
+  return localStorage.getItem(PIN_KEY);
+}
+
+function activateGuestMode(birthdayId, pin) {
+  localStorage.setItem(MODE_KEY, 'guest');
+  localStorage.setItem(GUEST_ID_KEY, birthdayId);
+  localStorage.setItem(PIN_KEY, pin);
+}
+
+function deactivateGuestMode() {
+  localStorage.setItem(MODE_KEY, 'admin');
+  localStorage.removeItem(GUEST_ID_KEY);
+  localStorage.removeItem(PIN_KEY);
+}
