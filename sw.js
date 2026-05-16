@@ -1,21 +1,24 @@
 /* ===== Service Worker — Cache-first strategy ===== */
-const CACHE = 'birthday-app-v1';
+const CACHE = 'birthday-app-v2';
+
+/* Use relative paths so SW works under any subdirectory (e.g. GitHub Pages) */
+const BASE = self.registration.scope;
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/base.css',
-  '/css/home.css',
-  '/css/countdown.css',
-  '/css/celebrate.css',
-  '/js/storage.js',
-  '/js/confetti.js',
-  '/js/fireworks.js',
-  '/js/cake.js',
-  '/js/countdown.js',
-  '/js/app.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'css/base.css',
+  BASE + 'css/home.css',
+  BASE + 'css/countdown.css',
+  BASE + 'css/celebrate.css',
+  BASE + 'js/storage.js',
+  BASE + 'js/confetti.js',
+  BASE + 'js/fireworks.js',
+  BASE + 'js/cake.js',
+  BASE + 'js/countdown.js',
+  BASE + 'js/app.js',
+  BASE + 'icons/icon-192.png',
+  BASE + 'icons/icon-512.png',
 ];
 
 self.addEventListener('install', e => {
@@ -44,6 +47,6 @@ self.addEventListener('fetch', e => {
         }
         return res;
       });
-    }).catch(() => caches.match('/index.html'))
+    }).catch(() => caches.match(BASE + 'index.html'))
   );
 });
