@@ -28,11 +28,13 @@ class CountdownController {
       </div>
       <div class="countdown-person">
         <div class="cd-avatar">${b.emoji}</div>
-        <div>
+
+        <div class="cd-name-block">
           <div class="cd-name">${escapeHTML(b.name)}</div>
           <div class="cd-label">的生日還有 <span id="cd-days-label">...</span></div>
+          ${ageChip}
         </div>
-        ${ageChip}
+
         <div class="progress-ring-wrap">
           <svg class="progress-ring-svg" viewBox="0 0 160 160">
             <defs>

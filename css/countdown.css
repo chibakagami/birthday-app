@@ -11,8 +11,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 24px 48px;
-  gap: 0;
+  padding: 16px 20px 48px;
 }
 
 .countdown-header {
@@ -20,15 +19,24 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 32px;
-  padding-top: 20px;
+  margin-bottom: 24px;
+  padding-top: 16px;
 }
 
 .countdown-person {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
+  width: 100%;
+}
+
+/* ── 姓名區塊獨立出來，加上間距避免與倒數重疊 ── */
+.cd-name-block {
+  text-align: center;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 20px;
   width: 100%;
 }
 

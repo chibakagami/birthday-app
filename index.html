@@ -28,8 +28,11 @@
   <!-- ===== HOME PAGE ===== -->
   <div id="page-home" class="page">
     <div class="home-header">
-      <div class="home-title">生日快樂 🎂</div>
-      <div class="home-subtitle">紀錄每一個重要的日子</div>
+      <div class="home-header-left">
+        <div class="home-title">生日快樂 🎂</div>
+        <div class="home-subtitle">紀錄每一個重要的日子</div>
+      </div>
+      <button class="settings-btn" id="settings-btn" aria-label="設定">⚙️</button>
     </div>
     <div id="today-banner-wrap"></div>
     <div class="birthday-list" id="birthday-list"></div>
@@ -43,46 +46,38 @@
 
   <!-- ===== CELEBRATE PAGE ===== -->
   <div id="page-celebrate" class="page">
-    <!-- Canvas effects -->
     <canvas id="confetti-canvas"></canvas>
     <canvas id="fireworks-canvas"></canvas>
-
-    <!-- Balloons -->
     <div class="balloons-layer" id="balloons-layer"></div>
-
-    <!-- Back button -->
     <button class="back-btn celebrate-back-btn" id="cel-back" aria-label="返回">←</button>
-
     <div class="celebrate-content">
-      <!-- Rainbow title -->
       <div class="celebrate-title" id="cel-title">🎉 生日快樂！</div>
       <div class="celebrate-name" id="cel-name"><span>名字</span></div>
       <div class="celebrate-age" id="cel-age"></div>
-
-      <!-- Cake -->
       <div class="cake-wrap" id="cake-wrap-outer">
         <div id="cake-wrap"></div>
-        <!-- Sparkle ring -->
         <div class="sparkle-ring" id="sparkle-ring"></div>
-        <!-- Music notes -->
         <div class="notes-layer" id="notes-layer"></div>
       </div>
-
-      <!-- Blow candles button -->
       <button class="blow-btn ripple-container" id="blow-btn">💨 吹蠟燭</button>
-
-      <!-- Wish reveal -->
       <div class="wish-reveal" id="cel-wish">🎊 許個願望吧！</div>
-
-      <!-- Message -->
       <div class="celebrate-message" id="cel-message"></div>
-
-      <!-- Gift boxes -->
       <div class="gifts-row">
-        <span class="gift-box" style="--delay:0.1s" aria-label="禮物" title="點我！">🎁</span>
-        <span class="gift-box" style="--delay:0.3s" aria-label="禮物" title="點我！">🎀</span>
-        <span class="gift-box" style="--delay:0.5s" aria-label="禮物" title="點我！">🎁</span>
+        <span class="gift-box" style="--delay:0.1s" title="點我！">🎁</span>
+        <span class="gift-box" style="--delay:0.3s" title="點我！">🎀</span>
+        <span class="gift-box" style="--delay:0.5s" title="點我！">🎁</span>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== GUEST MODE PAGE ===== -->
+  <div id="page-guest" class="page">
+    <div class="guest-content">
+      <div class="guest-mystery-icon" id="guest-icon" title="連點 5 下解鎖">🎁</div>
+      <div class="guest-hint">你有一個特別的日子</div>
+      <div class="guest-days-big" id="guest-days-num">–</div>
+      <div class="guest-days-label">天後見</div>
+      <div class="guest-unlock-hint">長按圖示可解鎖管理模式</div>
     </div>
   </div>
 
@@ -101,16 +96,13 @@
       <div class="form-group">
         <label class="form-label">生日 *</label>
         <div style="display:flex;gap:10px">
-          <input class="form-input" id="field-month" type="number" placeholder="月 (1-12)"
-            min="1" max="12" style="flex:1" required />
-          <input class="form-input" id="field-day" type="number" placeholder="日 (1-31)"
-            min="1" max="31" style="flex:1" required />
+          <input class="form-input" id="field-month" type="number" placeholder="月 (1-12)" min="1" max="12" style="flex:1" required />
+          <input class="form-input" id="field-day" type="number" placeholder="日 (1-31)" min="1" max="31" style="flex:1" required />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label" for="field-year">出生年份（選填，可計算年齡）</label>
-        <input class="form-input" id="field-year" type="number" placeholder="例如 1995"
-          min="1900" max="2025" />
+        <input class="form-input" id="field-year" type="number" placeholder="例如 1995" min="1900" max="2030" />
       </div>
       <div class="form-group">
         <label class="form-label">頭像</label>
@@ -118,8 +110,7 @@
       </div>
       <div class="form-group">
         <label class="form-label" for="field-message">祝福語（選填）</label>
-        <input class="form-input" id="field-message" type="text"
-          placeholder="願你生日快樂、健康幸福！" maxlength="80" />
+        <input class="form-input" id="field-message" type="text" placeholder="願你生日快樂、健康幸福！" maxlength="80" />
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-ghost" id="modal-cancel">取消</button>
@@ -128,6 +119,90 @@
     </form>
   </div>
 </div>
+
+<!-- ===== SETTINGS PANEL ===== -->
+<div class="modal-overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-label="設定">
+  <div class="modal-sheet" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div class="modal-title" style="margin:0">設定</div>
+      <button class="back-btn" id="settings-close" aria-label="關閉">✕</button>
+    </div>
+
+    <!-- Backup / Restore -->
+    <div class="settings-section">
+      <div class="settings-section-title">📦 資料備份</div>
+      <div class="settings-row" id="btn-export">
+        <div class="settings-row-left">
+          <span class="settings-row-icon">⬇️</span>
+          <div class="settings-row-info">
+            <h4>匯出備份</h4>
+            <p>下載 JSON 備份檔，防止資料遺失</p>
+          </div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
+      <div class="settings-row" id="btn-import">
+        <div class="settings-row-left">
+          <span class="settings-row-icon">⬆️</span>
+          <div class="settings-row-info">
+            <h4>匯入備份</h4>
+            <p>從備份檔還原所有生日資料</p>
+          </div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- Guest Mode -->
+    <div class="settings-section">
+      <div class="settings-section-title">🎁 壽星模式</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:14px;padding:12px 14px;background:rgba(255,255,255,0.05);border-radius:12px;">
+        將此 app 安裝在壽星手機上。<br>
+        生日前只顯示神秘倒數，生日當天自動出現你準備的祝福 🎉
+      </div>
+      <div class="form-group">
+        <label class="form-label">選擇壽星</label>
+        <select class="guest-select" id="guest-select"></select>
+      </div>
+      <button class="btn btn-primary" id="btn-activate-guest" style="width:100%;margin-top:8px">
+        🎁 啟動壽星模式
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== PIN OVERLAY ===== -->
+<div class="pin-overlay" id="pin-overlay" role="dialog" aria-modal="true" aria-label="輸入密碼">
+  <div class="pin-box">
+    <div class="pin-title">🔐 管理者驗證</div>
+    <div class="pin-subtitle" id="pin-purpose">輸入 4 位數密碼</div>
+    <div class="pin-dots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" data-val="1">1</button>
+      <button class="pin-key" data-val="2">2</button>
+      <button class="pin-key" data-val="3">3</button>
+      <button class="pin-key" data-val="4">4</button>
+      <button class="pin-key" data-val="5">5</button>
+      <button class="pin-key" data-val="6">6</button>
+      <button class="pin-key" data-val="7">7</button>
+      <button class="pin-key" data-val="8">8</button>
+      <button class="pin-key" data-val="9">9</button>
+      <button class="pin-key cancel" data-val="cancel">取消</button>
+      <button class="pin-key" data-val="0">0</button>
+      <button class="pin-key del" data-val="del">⌫</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="import-file-input" accept=".json" />
 
 <!-- Toast -->
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
