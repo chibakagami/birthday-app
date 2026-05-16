@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff6b9d" />
+  <meta name="description" content="生日倒數計時 &amp; 慶祝 App" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="生日快樂" />
+  <title>生日快樂 🎂</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/home.css" />
+  <link rel="stylesheet" href="/css/countdown.css" />
+  <link rel="stylesheet" href="/css/celebrate.css" />
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="stars-layer" id="stars-layer"></div>
+<div class="bg-emojis" id="bg-emojis"></div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- ===== HOME PAGE ===== -->
+  <div id="page-home" class="page">
+    <div class="home-header">
+      <div class="home-title">生日快樂 🎂</div>
+      <div class="home-subtitle">紀錄每一個重要的日子</div>
+    </div>
+    <div id="today-banner-wrap"></div>
+    <div class="birthday-list" id="birthday-list"></div>
+    <button class="btn fab ripple-container" id="fab" aria-label="新增生日">+</button>
+  </div>
+
+  <!-- ===== COUNTDOWN PAGE ===== -->
+  <div id="page-countdown" class="page">
+    <div id="countdown-content"></div>
+  </div>
+
+  <!-- ===== CELEBRATE PAGE ===== -->
+  <div id="page-celebrate" class="page">
+    <!-- Canvas effects -->
+    <canvas id="confetti-canvas"></canvas>
+    <canvas id="fireworks-canvas"></canvas>
+
+    <!-- Balloons -->
+    <div class="balloons-layer" id="balloons-layer"></div>
+
+    <!-- Back button -->
+    <button class="back-btn celebrate-back-btn" id="cel-back" aria-label="返回">←</button>
+
+    <div class="celebrate-content">
+      <!-- Rainbow title -->
+      <div class="celebrate-title" id="cel-title">🎉 生日快樂！</div>
+      <div class="celebrate-name" id="cel-name"><span>名字</span></div>
+      <div class="celebrate-age" id="cel-age"></div>
+
+      <!-- Cake -->
+      <div class="cake-wrap" id="cake-wrap-outer">
+        <div id="cake-wrap"></div>
+        <!-- Sparkle ring -->
+        <div class="sparkle-ring" id="sparkle-ring"></div>
+        <!-- Music notes -->
+        <div class="notes-layer" id="notes-layer"></div>
+      </div>
+
+      <!-- Blow candles button -->
+      <button class="blow-btn ripple-container" id="blow-btn">💨 吹蠟燭</button>
+
+      <!-- Wish reveal -->
+      <div class="wish-reveal" id="cel-wish">🎊 許個願望吧！</div>
+
+      <!-- Message -->
+      <div class="celebrate-message" id="cel-message"></div>
+
+      <!-- Gift boxes -->
+      <div class="gifts-row">
+        <span class="gift-box" style="--delay:0.1s" aria-label="禮物" title="點我！">🎁</span>
+        <span class="gift-box" style="--delay:0.3s" aria-label="禮物" title="點我！">🎀</span>
+        <span class="gift-box" style="--delay:0.5s" aria-label="禮物" title="點我！">🎁</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ===== MODAL: Add / Edit Birthday ===== -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">新增生日</div>
+    <form id="modal-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="field-name">姓名 *</label>
+        <input class="form-input" id="field-name" type="text" placeholder="輸入名字" maxlength="30" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">生日 *</label>
+        <div style="display:flex;gap:10px">
+          <input class="form-input" id="field-month" type="number" placeholder="月 (1-12)"
+            min="1" max="12" style="flex:1" required />
+          <input class="form-input" id="field-day" type="number" placeholder="日 (1-31)"
+            min="1" max="31" style="flex:1" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="field-year">出生年份（選填，可計算年齡）</label>
+        <input class="form-input" id="field-year" type="number" placeholder="例如 1995"
+          min="1900" max="2025" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">頭像</label>
+        <div class="emoji-picker" id="emoji-picker"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="field-message">祝福語（選填）</label>
+        <input class="form-input" id="field-message" type="text"
+          placeholder="願你生日快樂、健康幸福！" maxlength="80" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="modal-cancel">取消</button>
+        <button type="submit" class="btn btn-primary">儲存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Scripts -->
+<script src="/js/storage.js"></script>
+<script src="/js/confetti.js"></script>
+<script src="/js/fireworks.js"></script>
+<script src="/js/cake.js"></script>
+<script src="/js/countdown.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
