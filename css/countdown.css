@@ -1,0 +1,255 @@
+/* ===== Countdown Page ===== */
+#page-countdown {
+  padding: 0;
+  align-items: center;
+  overflow-y: auto;
+}
+
+#countdown-content {
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 48px;
+  gap: 0;
+}
+
+.countdown-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding-top: 20px;
+}
+
+.countdown-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Avatar */
+.cd-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,107,157,0.3), rgba(167,139,250,0.3));
+  border: 3px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  animation: avatarFloat 3s infinite ease-in-out;
+  position: relative;
+}
+.cd-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--primary);
+  border-right-color: var(--accent);
+  animation: spin 3s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes avatarFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.cd-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+}
+.cd-label {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: -16px;
+}
+.cd-label span { color: var(--primary); font-weight: 600; }
+
+/* ===== Progress Ring ===== */
+.progress-ring-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+.progress-ring-svg {
+  transform: rotate(-90deg);
+  width: 160px;
+  height: 160px;
+}
+.progress-ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.08);
+  stroke-width: 6;
+}
+.progress-ring-fill {
+  fill: none;
+  stroke: url(#ringGradient);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+.progress-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.progress-percent {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.progress-text {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Flip Clock ===== */
+.flip-clock {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.flip-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.flip-unit-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.flip-group {
+  display: flex;
+  gap: 3px;
+}
+
+.flip-card {
+  width: 54px;
+  height: 70px;
+  perspective: 400px;
+  position: relative;
+}
+.flip-card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: none;
+}
+.flip-card.flip .flip-card-inner {
+  animation: flipDown 0.5s ease forwards;
+}
+@keyframes flipDown {
+  0%   { transform: rotateX(0); }
+  50%  { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0); }
+}
+
+.flip-front, .flip-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(160deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  backface-visibility: hidden;
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+.flip-front::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%; bottom: 0;
+  background: rgba(0,0,0,0.15);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+/* Glow effect */
+.flip-card-inner::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity var(--transition);
+  animation: cardGlow 3s infinite alternate;
+}
+@keyframes cardGlow {
+  0%   { opacity: 0; }
+  100% { opacity: 0.3; }
+}
+
+/* Days unit gets bigger */
+.flip-unit.days .flip-card { width: 62px; height: 80px; }
+.flip-unit.days .flip-front,
+.flip-unit.days .flip-back { font-size: 2.4rem; }
+
+/* Colon separator */
+.flip-colon {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+  animation: colonBlink 1s infinite;
+}
+@keyframes colonBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ===== Date display ===== */
+.cd-date-row {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.cd-date-row strong { color: var(--text); }
+
+/* ===== Age chip ===== */
+.cd-age-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(167,139,250,0.15));
+  border: 1px solid rgba(255,107,157,0.25);
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary);
+}
