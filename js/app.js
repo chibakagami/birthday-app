@@ -633,6 +633,13 @@ function init() {
     key.addEventListener('click', () => pinKeyPress(key.dataset.val));
   });
 
+  /* 緊急解鎖：網址加上 ?reset 可強制清除壽星模式 */
+  if (new URLSearchParams(location.search).has('reset')) {
+    deactivateGuestMode();
+    history.replaceState({}, '', location.pathname);
+    showToast('已重置為管理者模式');
+  }
+
   /* Start appropriate page */
   if (getAppMode() === 'guest') {
     showPage('guest');
