@@ -158,6 +158,16 @@ function startCelebration(birthday) {
   document.getElementById('cel-title').innerHTML = '🎉 生日快樂！';
   document.getElementById('cel-name').innerHTML = `<span>${escapeHTML(b.name)}</span>`;
 
+  /* 壽星模式：返回鍵改為 🔒 解鎖，避免返回後循環 */
+  const backBtn = document.getElementById('cel-back');
+  if (getAppMode() === 'guest') {
+    backBtn.textContent = '🔒';
+    backBtn.title = '管理者解鎖';
+  } else {
+    backBtn.textContent = '←';
+    backBtn.title = '';
+  }
+
   const msg = b.message || '願你的每一天都充滿喜悅和幸福！';
   document.getElementById('cel-message').textContent = msg;
 
@@ -592,10 +602,23 @@ function init() {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
 
-  /* Celebrate back */
+  /* Celebrate back:
+     - 管理者模式 → 直接返回首頁
+     - 壽星模式   → 顯示 PIN 輸入；答對才切回管理者，取消則留在慶祝頁 */
   document.getElementById('cel-back').addEventListener('click', () => {
-    if (getAppMode() === 'guest') showPage('guest');
-    else showPage('home');
+    if (getAppMode() === 'guest') {
+      openPinOverlay('unlock').then(pin => {
+        if (pin !== null) {
+          deactivateGuestMode();
+          clearInterval(guestDaysTimer);
+          showPage('home');
+          showToast('已切換回管理者模式 ✓');
+        }
+        /* pin === null 表示取消，留在慶祝頁，什麼都不做 */
+      });
+    } else {
+      showPage('home');
+    }
   });
 
   /* Gift boxes */
