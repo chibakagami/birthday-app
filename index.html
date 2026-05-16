@@ -50,6 +50,7 @@
     <canvas id="fireworks-canvas"></canvas>
     <div class="balloons-layer" id="balloons-layer"></div>
     <button class="back-btn celebrate-back-btn" id="cel-back" aria-label="返回">←</button>
+    <div class="guest-unlock-trigger" id="cel-unlock-trigger" style="display:none">✦</div>
     <div class="celebrate-content">
       <div class="celebrate-title" id="cel-title">🎉 生日快樂！</div>
       <div class="celebrate-name" id="cel-name"><span>名字</span></div>
@@ -73,12 +74,12 @@
   <!-- ===== GUEST MODE PAGE ===== -->
   <div id="page-guest" class="page">
     <div class="guest-content">
-      <div class="guest-mystery-icon" id="guest-icon" title="連點 5 下解鎖">🎁</div>
+      <div class="guest-mystery-icon" id="guest-icon">🎁</div>
       <div class="guest-hint">你有一個特別的日子</div>
       <div class="guest-days-big" id="guest-days-num">–</div>
       <div class="guest-days-label">天後見</div>
-      <div class="guest-unlock-hint">長按圖示可解鎖管理模式</div>
     </div>
+    <div class="guest-unlock-trigger" id="guest-unlock-trigger">✦</div>
   </div>
 
 </div><!-- /app -->

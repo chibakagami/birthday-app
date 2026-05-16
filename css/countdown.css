@@ -79,7 +79,7 @@
   font-size: 0.95rem;
   color: var(--text-muted);
   text-align: center;
-  margin-top: -16px;
+  margin-top: 6px;
 }
 .cd-label span { color: var(--primary); font-weight: 600; }
 
