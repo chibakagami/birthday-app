@@ -1,6 +1,6 @@
 {
-  "name": "生日快樂",
-  "short_name": "生日",
+  "name": "驚奇小app",
+  "short_name": "驚奇小app",
   "description": "生日倒數計時與慶祝 App",
   "start_url": "./",
   "display": "standalone",

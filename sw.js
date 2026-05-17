@@ -1,5 +1,5 @@
 /* ===== Service Worker — Cache-first strategy ===== */
-const CACHE = 'birthday-app-v4';
+const CACHE = 'birthday-app-v5';
 
 /* Use relative paths so SW works under any subdirectory (e.g. GitHub Pages) */
 const BASE = self.registration.scope;
