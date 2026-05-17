@@ -438,6 +438,7 @@ function handleGuestTap() {
     openPinOverlay('unlock').then(pin => {
       if (pin !== null) {
         deactivateGuestMode();
+        clearBirthdayNotification();
         showPage('home');
         showToast('已切換回管理者模式');
       }
@@ -471,6 +472,53 @@ async function activateGuestModeFlow() {
   closeSettingsPanel();
   showPage('guest');
   showToast('壽星模式已啟動 🎁');
+
+  /* Register birthday notification (best-effort) */
+  setupBirthdayNotification(b);
+}
+
+async function setupBirthdayNotification(birthday) {
+  if (!('serviceWorker' in navigator)) return;
+
+  /* Request notification permission */
+  let perm = Notification.permission;
+  if (perm === 'default') {
+    perm = await Notification.requestPermission();
+  }
+  if (perm !== 'granted') {
+    showToast('未開啟通知權限，生日當天請手動打開 app');
+    return;
+  }
+
+  /* Send birthday data to SW via message */
+  const reg = await navigator.serviceWorker.ready;
+  reg.active.postMessage({
+    type: 'STORE_BIRTHDAY',
+    payload: { month: Number(birthday.month), day: Number(birthday.day), name: birthday.name },
+  });
+
+  /* Register Periodic Background Sync (Chrome Android PWA) */
+  if ('periodicSync' in reg) {
+    try {
+      const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+      if (status.state === 'granted') {
+        await reg.periodicSync.register('birthday-check', {
+          minInterval: 12 * 60 * 60 * 1000, // check every 12 hours
+        });
+      }
+    } catch (_) { /* API not supported — silent fallback */ }
+  }
+}
+
+async function clearBirthdayNotification() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    reg.active.postMessage({ type: 'CLEAR_BIRTHDAY' });
+    if ('periodicSync' in reg) {
+      await reg.periodicSync.unregister('birthday-check').catch(() => {});
+    }
+  } catch (_) {}
 }
 
 /* ---- Toast ---- */
@@ -625,6 +673,7 @@ function init() {
   /* 緊急解鎖：網址加上 ?reset 可強制清除壽星模式 */
   if (new URLSearchParams(location.search).has('reset')) {
     deactivateGuestMode();
+    clearBirthdayNotification();
     history.replaceState({}, '', location.pathname);
     showToast('已重置為管理者模式');
   }
