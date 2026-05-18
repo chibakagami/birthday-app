@@ -508,6 +508,14 @@ ul { list-style: none; }
 }
 .guest-link-copy:hover { background: rgba(255,255,255,0.2); }
 
+.paste-link-box {
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
 /* ===== PIN Overlay ===== */
 .pin-overlay {
   position: fixed;

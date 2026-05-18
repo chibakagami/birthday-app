@@ -489,9 +489,20 @@ function handleGuestTap() {
   }
 }
 
-/* ---- Generate guest link (Phone A → Phone B) ---- */
-function generateGuestLink(birthday, notifyTime, pin) {
-  const payload = {
+/* ---- URL-safe Base64 (avoids +/= getting mangled by sharing apps) ---- */
+function base64UrlEncode(str) {
+  return btoa(encodeURIComponent(str))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function base64UrlDecode(str) {
+  let s = String(str).replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  return decodeURIComponent(atob(s));
+}
+
+/* ---- Build the setup payload shared by link & file ---- */
+function buildGuestSetupPayload(birthday, notifyTime, pin) {
+  return {
     name: birthday.name,
     month: Number(birthday.month),
     day: Number(birthday.day),
@@ -501,8 +512,13 @@ function generateGuestLink(birthday, notifyTime, pin) {
     notifyTime: notifyTime || '09:00',
     pin,
   };
-  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
-  return `${location.origin}${location.pathname}#guest=${encoded}`;
+}
+
+/* ---- Generate guest link (Phone A → Phone B), query-param based ---- */
+function generateGuestLink(birthday, notifyTime, pin) {
+  const payload = buildGuestSetupPayload(birthday, notifyTime, pin);
+  const encoded = base64UrlEncode(JSON.stringify(payload));
+  return `${location.origin}${location.pathname}?guest=${encoded}`;
 }
 
 async function generateLinkFlow() {
@@ -543,8 +559,84 @@ async function generateLinkFlow() {
   };
 }
 
+/* ---- Download guest setup file (Phone A → Phone B backup) ---- */
+function downloadGuestSetupFile(birthday, notifyTime, pin) {
+  const payload = buildGuestSetupPayload(birthday, notifyTime, pin);
+  const data = { type: 'birthday-guest-setup', version: 1, payload };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `驚奇設定-${birthday.name}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function downloadFileFlow() {
+  const sel = document.getElementById('guest-select');
+  if (!sel || !sel.value) { showToast('請先選擇壽星'); return; }
+  const b = getBirthday(sel.value);
+  if (!b) return;
+
+  const timeInput = document.getElementById('guest-notify-time');
+  const notifyTime = (timeInput && timeInput.value) ? timeInput.value : '09:00';
+
+  let pin = getAdminPin();
+  if (!pin) {
+    pin = await openPinOverlay('set');
+    if (!pin) return;
+    localStorage.setItem(PIN_KEY, pin);
+  }
+
+  downloadGuestSetupFile(b, notifyTime, pin);
+  showToast('設定檔已下載，傳給壽星即可');
+}
+
+/* ---- Import guest setup from pasted link text ---- */
+function importGuestSetupFromText(text) {
+  if (!text) { showToast('請貼上連結'); return; }
+  let encoded = '';
+  const qMatch = text.match(/[?&]guest=([^&\s#]+)/);
+  const hMatch = text.match(/#guest=([^&\s]+)/);
+  if (qMatch) encoded = qMatch[1];
+  else if (hMatch) encoded = hMatch[1];
+  else encoded = text.trim();
+
+  try {
+    const config = JSON.parse(base64UrlDecode(encoded));
+    handleGuestSetupLink(config);
+  } catch {
+    showToast('連結格式錯誤，請確認貼上完整連結');
+  }
+}
+
+/* ---- Import guest setup from .json file ---- */
+function importGuestSetupFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const payload = data.type === 'birthday-guest-setup' ? data.payload : data;
+      if (!payload || !payload.name || !payload.month || !payload.day) {
+        throw new Error('invalid payload');
+      }
+      handleGuestSetupLink(payload);
+    } catch {
+      showToast('設定檔格式錯誤');
+    }
+  };
+  reader.readAsText(file);
+}
+
 /* ---- Handle incoming guest setup link (Phone B) ---- */
 function handleGuestSetupLink(config) {
+  if (!config || !config.name || !config.month || !config.day || !config.pin) {
+    showToast('設定資料不完整');
+    return;
+  }
+
   /* Create or update birthday in storage */
   const list = loadBirthdays();
   const existing = list.find(
@@ -563,8 +655,10 @@ function handleGuestSetupLink(config) {
 
   activateGuestMode(birthdayId, config.pin);
   setGuestNotifyTime(config.notifyTime || '09:00');
+  /* Clean both query and hash from URL */
   history.replaceState({}, '', location.pathname);
   setupBirthdayNotification({ ...config, notifyTime: config.notifyTime });
+  closeSettingsPanel();
   showPage('guest');
   showToast('驚奇模式已設定完成 🎁');
 }
@@ -745,11 +839,41 @@ function init() {
     e.target.value = '';
   });
 
-  /* Generate shareable guest link */
+  /* Generate shareable guest link / download setup file */
   document.getElementById('btn-generate-link').addEventListener('click', generateLinkFlow);
+  document.getElementById('btn-download-file').addEventListener('click', downloadFileFlow);
 
   /* Local guest mode (direct setup on birthday person's phone) */
   document.getElementById('btn-activate-guest').addEventListener('click', activateGuestModeFlow);
+
+  /* Import guest setup — paste link */
+  const pasteBox = document.getElementById('paste-link-box');
+  document.getElementById('btn-paste-setup-link').addEventListener('click', () => {
+    if (pasteBox.style.display === 'none') {
+      pasteBox.style.display = '';
+      document.getElementById('paste-link-input').focus();
+    } else {
+      pasteBox.style.display = 'none';
+    }
+  });
+  document.getElementById('btn-paste-cancel').addEventListener('click', () => {
+    pasteBox.style.display = 'none';
+    document.getElementById('paste-link-input').value = '';
+  });
+  document.getElementById('btn-paste-confirm').addEventListener('click', () => {
+    const text = document.getElementById('paste-link-input').value.trim();
+    importGuestSetupFromText(text);
+  });
+
+  /* Import guest setup — file */
+  document.getElementById('btn-import-setup-file').addEventListener('click', () => {
+    document.getElementById('guest-setup-file-input').click();
+  });
+  document.getElementById('guest-setup-file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) importGuestSetupFromFile(file);
+    e.target.value = '';
+  });
 
   /* Modal form submit */
   document.getElementById('modal-form').addEventListener('submit', e => {
@@ -810,15 +934,19 @@ function init() {
     showToast('已重置為管理者模式');
   }
 
-  /* 解析分享連結 #guest=BASE64 (Phone B auto-setup) */
-  if (location.hash.startsWith('#guest=')) {
+  /* 解析分享連結：?guest=BASE64 (新) 或 #guest=BASE64 (舊版相容) */
+  const urlObj = new URL(location.href);
+  const queryGuest = urlObj.searchParams.get('guest');
+  const hashMatch = location.hash.match(/^#guest=(.+)$/);
+  const guestEncoded = queryGuest || (hashMatch && hashMatch[1]);
+  if (guestEncoded) {
     try {
-      const encoded = location.hash.slice('#guest='.length);
-      const config = JSON.parse(decodeURIComponent(atob(encoded)));
+      const config = JSON.parse(base64UrlDecode(guestEncoded));
       handleGuestSetupLink(config);
       return; /* showPage already called inside */
     } catch (_) {
-      history.replaceState({}, '', location.pathname); /* bad hash, ignore */
+      history.replaceState({}, '', location.pathname);
+      showToast('設定連結無效或損毀');
     }
   }
 

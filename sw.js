@@ -1,5 +1,5 @@
 /* ===== Service Worker — Cache-first strategy ===== */
-const CACHE = 'birthday-app-v9';
+const CACHE = 'birthday-app-v10';
 const BDAY_STORE = 'birthday-notify-data'; // separate cache, survives CACHE bumps
 
 /* Use relative paths so SW works under any subdirectory (e.g. GitHub Pages) */

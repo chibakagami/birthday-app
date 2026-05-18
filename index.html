@@ -173,9 +173,14 @@
         <input class="form-input" type="time" id="guest-notify-time" value="09:00" />
       </div>
 
-      <button class="btn btn-primary" id="btn-generate-link" style="width:100%;margin-top:8px">
-        🔗 產生分享連結
-      </button>
+      <div style="display:flex; gap:8px; margin-top:8px">
+        <button class="btn btn-primary" id="btn-generate-link" style="flex:1">
+          🔗 產生連結
+        </button>
+        <button class="btn btn-ghost" id="btn-download-file" style="flex:1">
+          📥 下載設定檔
+        </button>
+      </div>
 
       <!-- Link display (initially hidden) -->
       <div class="guest-link-box" id="guest-link-box" style="display:none">
@@ -198,6 +203,46 @@
           📱 本機直接啟動壽星模式
         </button>
       </details>
+    </div>
+
+    <!-- ===== Import Guest Setup (Phone B) ===== -->
+    <div class="settings-section">
+      <div class="settings-section-title">📨 收到設定？匯入這裡</div>
+      <div class="settings-hint-box">
+        如果你收到別人傳來的驚奇 app <strong>連結</strong>或<strong>設定檔</strong>，<br>
+        從這裡匯入即可進入壽星模式。
+      </div>
+
+      <div class="settings-row" id="btn-paste-setup-link">
+        <div class="settings-row-left">
+          <span class="settings-row-icon">🔗</span>
+          <div class="settings-row-info">
+            <h4>貼上設定連結</h4>
+            <p>從訊息複製連結後貼上</p>
+          </div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
+
+      <!-- Paste input (initially hidden) -->
+      <div class="paste-link-box" id="paste-link-box" style="display:none">
+        <input class="form-input" id="paste-link-input" placeholder="貼上連結或編碼字串..." />
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-ghost" id="btn-paste-cancel" style="flex:1">取消</button>
+          <button class="btn btn-primary" id="btn-paste-confirm" style="flex:1">匯入</button>
+        </div>
+      </div>
+
+      <div class="settings-row" id="btn-import-setup-file">
+        <div class="settings-row-left">
+          <span class="settings-row-icon">📥</span>
+          <div class="settings-row-info">
+            <h4>選擇設定檔</h4>
+            <p>從 .json 設定檔匯入</p>
+          </div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
     </div>
 
   </div>
@@ -231,8 +276,9 @@
   </div>
 </div>
 
-<!-- Hidden file input for import -->
+<!-- Hidden file inputs for import -->
 <input type="file" id="import-file-input" accept=".json" />
+<input type="file" id="guest-setup-file-input" accept=".json" />
 
 <!-- Toast -->
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
