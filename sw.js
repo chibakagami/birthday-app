@@ -1,5 +1,5 @@
 /* ===== Service Worker — Cache-first strategy ===== */
-const CACHE = 'birthday-app-v7';
+const CACHE = 'birthday-app-v8';
 const BDAY_STORE = 'birthday-notify-data'; // separate cache, survives CACHE bumps
 
 /* Use relative paths so SW works under any subdirectory (e.g. GitHub Pages) */
@@ -70,6 +70,12 @@ async function checkBirthdayAndNotify() {
   const todayD = now.getDate();
 
   if (todayM === data.month && todayD === data.day) {
+    /* Time gate: only fire at/after the configured notify time */
+    const notifyTime = data.notifyTime || '00:00';
+    const [th, tm] = notifyTime.split(':').map(Number);
+    const nowH = now.getHours(), nowM = now.getMinutes();
+    if (!(nowH > th || (nowH === th && nowM >= tm))) return;
+
     /* Avoid spamming: check if we already notified today */
     const sentResp = await cache.match('notified-date');
     if (sentResp) {

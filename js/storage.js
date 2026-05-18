@@ -136,6 +136,7 @@ function importData(jsonText) {
 const MODE_KEY = 'app_mode';
 const GUEST_ID_KEY = 'guest_birthday_id';
 const PIN_KEY = 'admin_pin';
+const GUEST_TIME_KEY = 'guest_notify_time';
 
 function getAppMode() {
   return localStorage.getItem(MODE_KEY) || 'admin';
@@ -149,6 +150,14 @@ function getAdminPin() {
   return localStorage.getItem(PIN_KEY);
 }
 
+function getGuestNotifyTime() {
+  return localStorage.getItem(GUEST_TIME_KEY) || '09:00';
+}
+
+function setGuestNotifyTime(t) {
+  localStorage.setItem(GUEST_TIME_KEY, t);
+}
+
 function activateGuestMode(birthdayId, pin) {
   localStorage.setItem(MODE_KEY, 'guest');
   localStorage.setItem(GUEST_ID_KEY, birthdayId);
@@ -159,4 +168,5 @@ function deactivateGuestMode() {
   localStorage.setItem(MODE_KEY, 'admin');
   localStorage.removeItem(GUEST_ID_KEY);
   localStorage.removeItem(PIN_KEY);
+  localStorage.removeItem(GUEST_TIME_KEY);
 }

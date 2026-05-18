@@ -363,21 +363,57 @@ function startGuestMode() {
   if (!b) { deactivateGuestMode(); showPage('home'); return; }
 
   if (isBirthdayToday(b.month, b.day)) {
-    showPage('celebrate', b);
+    const [th, tm] = getGuestNotifyTime().split(':').map(Number);
+    const now = new Date();
+    if (now.getHours() > th || (now.getHours() === th && now.getMinutes() >= tm)) {
+      showPage('celebrate', b);
+      return;
+    }
+    /* Birthday today but time not yet reached — show time countdown */
+    showSurpriseCountdown(b, th, tm);
     return;
   }
 
   const daysEl = document.getElementById('guest-days-num');
+  const labelEl = document.querySelector('.guest-days-label');
+  if (labelEl) labelEl.textContent = '天後見';
+
   const updateDays = () => {
     const d = daysUntilBirthday(b.month, b.day);
     if (daysEl) daysEl.textContent = d;
     if (isBirthdayToday(b.month, b.day)) {
       clearInterval(guestDaysTimer);
-      showPage('celebrate', b);
+      startGuestMode(); /* re-enter to apply time check */
     }
   };
   updateDays();
   guestDaysTimer = setInterval(updateDays, 60000);
+}
+
+function showSurpriseCountdown(birthday, targetH, targetM) {
+  const daysEl = document.getElementById('guest-days-num');
+  const labelEl = document.querySelector('.guest-days-label');
+  if (labelEl) labelEl.textContent = '後有驚喜 🎁';
+
+  const tick = () => {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(targetH, targetM, 0, 0);
+    const diff = target - now;
+    if (diff <= 0) {
+      clearInterval(guestDaysTimer);
+      showPage('celebrate', birthday);
+      return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    if (daysEl) daysEl.textContent =
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  tick();
+  clearInterval(guestDaysTimer);
+  guestDaysTimer = setInterval(tick, 1000);
 }
 
 /* ---- PIN Overlay ---- */
@@ -448,7 +484,87 @@ function handleGuestTap() {
   }
 }
 
-/* ---- Activate guest mode flow ---- */
+/* ---- Generate guest link (Phone A → Phone B) ---- */
+function generateGuestLink(birthday, notifyTime, pin) {
+  const payload = {
+    name: birthday.name,
+    month: Number(birthday.month),
+    day: Number(birthday.day),
+    year: birthday.year ? Number(birthday.year) : null,
+    emoji: birthday.emoji || '🎂',
+    message: birthday.message || '',
+    notifyTime: notifyTime || '09:00',
+    pin,
+  };
+  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+  return `${location.origin}${location.pathname}#guest=${encoded}`;
+}
+
+async function generateLinkFlow() {
+  const sel = document.getElementById('guest-select');
+  if (!sel || !sel.value) { showToast('請先選擇壽星'); return; }
+  const b = getBirthday(sel.value);
+  if (!b) return;
+
+  const timeInput = document.getElementById('guest-notify-time');
+  const notifyTime = (timeInput && timeInput.value) ? timeInput.value : '09:00';
+
+  let pin = getAdminPin();
+  if (!pin) {
+    pin = await openPinOverlay('set');
+    if (!pin) return;
+    localStorage.setItem(PIN_KEY, pin);
+  }
+
+  const link = generateGuestLink(b, notifyTime, pin);
+
+  const linkBox = document.getElementById('guest-link-box');
+  const linkDisplay = document.getElementById('guest-link-display');
+  if (linkBox && linkDisplay) {
+    linkDisplay.value = link;
+    linkBox.style.display = '';
+  }
+
+  document.getElementById('btn-copy-link').onclick = () => {
+    navigator.clipboard.writeText(link).then(() => showToast('連結已複製 ✓'));
+  };
+  document.getElementById('btn-share-link').onclick = async () => {
+    if (navigator.share) {
+      await navigator.share({ title: '驚奇小app', text: '有驚喜等著你 🎁', url: link });
+    } else {
+      navigator.clipboard.writeText(link);
+      showToast('連結已複製，請手動貼上分享');
+    }
+  };
+}
+
+/* ---- Handle incoming guest setup link (Phone B) ---- */
+function handleGuestSetupLink(config) {
+  /* Create or update birthday in storage */
+  const list = loadBirthdays();
+  const existing = list.find(
+    b => b.name === config.name && b.month === config.month && b.day === config.day
+  );
+  let birthdayId;
+  if (existing) {
+    updateBirthday(existing.id, {
+      year: config.year, emoji: config.emoji,
+      message: config.message,
+    });
+    birthdayId = existing.id;
+  } else {
+    birthdayId = addBirthday(config).id;
+  }
+
+  activateGuestMode(birthdayId, config.pin);
+  setGuestNotifyTime(config.notifyTime || '09:00');
+  history.replaceState({}, '', location.pathname);
+  setupBirthdayNotification({ ...config, notifyTime: config.notifyTime });
+  showPage('guest');
+  showToast('驚奇模式已設定完成 🎁');
+}
+
+/* ---- Activate guest mode flow (local, Phone A = Phone B) ---- */
 async function activateGuestModeFlow() {
   const sel = document.getElementById('guest-select');
   if (!sel || !sel.value) { showToast('請先選擇壽星'); return; }
@@ -466,9 +582,12 @@ async function activateGuestModeFlow() {
     if (!pin) return;
   }
 
-  if (!confirm(`確定將 app 切換為「壽星模式」？\n\n${b.emoji} ${b.name} 只會看到倒數計時，\n生日當天才會出現你的祝福。\n\n解鎖需要輸入剛才設定的密碼。`)) return;
+  const notifyTime = document.getElementById('guest-notify-time')?.value || '09:00';
+
+  if (!confirm(`確定將 app 切換為「壽星模式」？\n\n${b.emoji} ${b.name} 只會看到神秘倒數，\n${notifyTime} 才會出現你的祝福。\n\n解鎖需要輸入剛才設定的密碼。`)) return;
 
   activateGuestMode(birthdayId, pin);
+  setGuestNotifyTime(notifyTime);
   closeSettingsPanel();
   showPage('guest');
   showToast('壽星模式已啟動 🎁');
@@ -494,7 +613,12 @@ async function setupBirthdayNotification(birthday) {
   const reg = await navigator.serviceWorker.ready;
   reg.active.postMessage({
     type: 'STORE_BIRTHDAY',
-    payload: { month: Number(birthday.month), day: Number(birthday.day), name: birthday.name },
+    payload: {
+      month: Number(birthday.month),
+      day: Number(birthday.day),
+      name: birthday.name,
+      notifyTime: birthday.notifyTime || getGuestNotifyTime(),
+    },
   });
 
   /* Register Periodic Background Sync (Chrome Android PWA) */
@@ -503,7 +627,7 @@ async function setupBirthdayNotification(birthday) {
       const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
       if (status.state === 'granted') {
         await reg.periodicSync.register('birthday-check', {
-          minInterval: 12 * 60 * 60 * 1000, // check every 12 hours
+          minInterval: 60 * 60 * 1000, // check every hour for better time precision
         });
       }
     } catch (_) { /* API not supported — silent fallback */ }
@@ -616,7 +740,10 @@ function init() {
     e.target.value = '';
   });
 
-  /* Activate guest mode */
+  /* Generate shareable guest link */
+  document.getElementById('btn-generate-link').addEventListener('click', generateLinkFlow);
+
+  /* Local guest mode (direct setup on birthday person's phone) */
   document.getElementById('btn-activate-guest').addEventListener('click', activateGuestModeFlow);
 
   /* Modal form submit */
@@ -676,6 +803,18 @@ function init() {
     clearBirthdayNotification();
     history.replaceState({}, '', location.pathname);
     showToast('已重置為管理者模式');
+  }
+
+  /* 解析分享連結 #guest=BASE64 (Phone B auto-setup) */
+  if (location.hash.startsWith('#guest=')) {
+    try {
+      const encoded = location.hash.slice('#guest='.length);
+      const config = JSON.parse(decodeURIComponent(atob(encoded)));
+      handleGuestSetupLink(config);
+      return; /* showPage already called inside */
+    } catch (_) {
+      history.replaceState({}, '', location.pathname); /* bad hash, ignore */
+    }
   }
 
   /* Start appropriate page */

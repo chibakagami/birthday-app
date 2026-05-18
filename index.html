@@ -158,17 +158,46 @@
     <!-- Guest Mode -->
     <div class="settings-section">
       <div class="settings-section-title">🎁 壽星模式</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:14px;padding:12px 14px;background:rgba(255,255,255,0.05);border-radius:12px;">
-        將此 app 安裝在壽星手機上。<br>
-        生日前只顯示神秘倒數，生日當天自動出現你準備的祝福 🎉
+      <div class="settings-hint-box">
+        設定好後產生連結，傳給壽星安裝。<br>
+        生日前只顯示神秘倒數，到了設定時間才跳出你的祝福 🎉
       </div>
+
       <div class="form-group">
         <label class="form-label">選擇壽星</label>
         <select class="guest-select" id="guest-select"></select>
       </div>
-      <button class="btn btn-primary" id="btn-activate-guest" style="width:100%;margin-top:8px">
-        🎁 啟動壽星模式
+
+      <div class="form-group">
+        <label class="form-label">幾點跳出慶生畫面</label>
+        <input class="form-input" type="time" id="guest-notify-time" value="09:00" />
+      </div>
+
+      <button class="btn btn-primary" id="btn-generate-link" style="width:100%;margin-top:8px">
+        🔗 產生分享連結
       </button>
+
+      <!-- Link display (initially hidden) -->
+      <div class="guest-link-box" id="guest-link-box" style="display:none">
+        <div class="guest-link-label">將連結傳給壽星，讓他用 Chrome 開啟並安裝：</div>
+        <div class="guest-link-row">
+          <input class="guest-link-input" id="guest-link-display" readonly />
+          <button class="guest-link-copy" id="btn-copy-link" title="複製連結">📋</button>
+        </div>
+        <button class="btn btn-ghost" id="btn-share-link" style="width:100%;margin-top:10px">
+          📤 分享連結
+        </button>
+      </div>
+
+      <!-- Local setup (collapsed) -->
+      <details style="margin-top:16px">
+        <summary style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;padding:4px 0">
+          ▸ 直接在壽星手機上設定…
+        </summary>
+        <button class="btn btn-ghost" id="btn-activate-guest" style="width:100%;margin-top:10px">
+          📱 本機直接啟動壽星模式
+        </button>
+      </details>
     </div>
 
   </div>
