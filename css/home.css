@@ -73,6 +73,7 @@
   background: linear-gradient(135deg, rgba(255,107,157,0.05), rgba(167,139,250,0.05));
   opacity: 0;
   transition: opacity var(--transition);
+  pointer-events: none;
 }
 .birthday-card:hover {
   transform: translateY(-4px) scale(1.02);
@@ -195,8 +196,8 @@
   justify-content: flex-end;
 }
 .card-action-btn {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: rgba(255,255,255,0.07);
   border: 1px solid var(--card-border);
@@ -206,6 +207,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
 }
 .card-action-btn:hover { background: rgba(255,255,255,0.15); color: var(--text); transform: scale(1.1); }
 .card-action-btn.delete:hover { background: rgba(255,80,80,0.2); border-color: rgba(255,80,80,0.4); color: #ff5050; }

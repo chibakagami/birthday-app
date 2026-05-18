@@ -127,17 +127,22 @@ function buildCard(b, idx) {
     </div>`;
 
   card.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) {
+    if (!e.target.closest('[data-action]')) {
       if (isToday) showPage('celebrate', b);
       else showPage('countdown', b);
-      return;
     }
-    const action = btn.dataset.action;
-    if (action === 'countdown') showPage('countdown', b);
-    else if (action === 'celebrate') showPage('celebrate', b);
-    else if (action === 'edit') openModal(b);
-    else if (action === 'delete') confirmDelete(b);
+  });
+
+  /* Attach listeners directly on each button for reliable mobile taps */
+  card.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      if (action === 'countdown') showPage('countdown', b);
+      else if (action === 'celebrate') showPage('celebrate', b);
+      else if (action === 'edit') openModal(b);
+      else if (action === 'delete') confirmDelete(b);
+    });
   });
 
   addRipple(card);
